@@ -11,6 +11,7 @@
 	"author": "kyg",
 	"license": "MIT",
 	"dependencies": {
+		"antd": "^4.2.4",
 		"next": "^9.4.1",
 		"react": "^16.13.1",
 		"react-dom": "^16.13.1"

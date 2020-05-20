@@ -4,7 +4,7 @@ const Home = () => {
   return (
     <>
       <Link href="/about">
-        <a>about</a>
+        <a>about test</a>
       </Link>
       <div>Hello, Next!</div>
     </>

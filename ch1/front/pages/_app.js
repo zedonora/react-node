@@ -20,7 +20,7 @@ const NodeBird = ({ Component }) => {
 };
 
 NodeBird.propTypes = {
-  Component: PropTypes.elementType
+  Component: PropTypes.string,
 };
 
 export default NodeBird;

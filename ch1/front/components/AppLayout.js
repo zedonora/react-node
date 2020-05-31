@@ -6,7 +6,7 @@ import UserProfile from "./UserProfile";
 import Link from "next/link";
 
 const dummy = {
-  nickname: "영관김",
+  nickname: "kyg",
   Post: [],
   Followings: [],
   Followers: [],

@@ -1,6 +1,6 @@
 import React from "react";
-import { Form, Input, Button, List, Card } from "antd";
-import { Icon } from "@ant-design/compatible";
+import { Button, List, Card } from "antd";
+import { StopOutlined } from "@ant-design/icons";
 import NicknameEditForm from "../components/NicknameEditForm";
 const Profile = () => {
   return (
@@ -16,7 +16,7 @@ const Profile = () => {
         dataSource={["제로초", "바보", "노드버드오피셜"]}
         renderItem={(item) => (
           <List.Item style={{ marginTop: "20px" }}>
-            <Card actions={[<Icon key="stop" type="stop" />]}>
+            <Card actions={[<StopOutlined />]}>
               <Card.Meta description={item} />
             </Card>
           </List.Item>

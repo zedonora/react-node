@@ -1,29 +1,31 @@
 {
-	"name": "react-nodebird-front",
-	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
-	"scripts": {
-		"dev": "next",
-		"build": "next build",
-		"start": "next start"
-	},
-	"author": "kyg",
-	"license": "MIT",
-	"dependencies": {
-		"@ant-design/compatible": "^1.0.2",
-		"antd": "^4.2.4",
-		"next": "^9.4.1",
-		"prop-types": "^15.7.2",
-		"react": "^16.13.1",
-		"react-dom": "^16.13.1"
-	},
-	"devDependencies": {
-		"eslint": "^7.0.0",
-		"eslint-plugin-import": "^2.20.2",
-		"eslint-plugin-react": "^7.20.0",
-		"eslint-plugin-react-hooks": "^4.0.2",
-		"nodemon": "^2.0.4",
-		"webpack": "^4.43.0"
-	}
+    "name": "react-nodebird-front",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "dev": "next",
+        "build": "next build",
+        "start": "next start"
+    },
+    "author": "kyg",
+    "license": "MIT",
+    "dependencies": {
+        "@ant-design/icons": "^4.2.1",
+        "antd": "^4.2.4",
+        "next": "^9.4.1",
+        "prop-types": "^15.7.2",
+        "react": "^16.13.1",
+        "react-dom": "^16.13.1",
+        "react-redux": "^7.2.0",
+        "redux": "^4.0.5"
+    },
+    "devDependencies": {
+        "eslint": "^7.0.0",
+        "eslint-plugin-import": "^2.20.2",
+        "eslint-plugin-react": "^7.20.0",
+        "eslint-plugin-react-hooks": "^4.0.2",
+        "nodemon": "^2.0.4",
+        "webpack": "^4.43.0"
+    }
 }

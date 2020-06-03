@@ -20,7 +20,7 @@ export const addDummy = {
   },
 };
 
-const reducer = (state = initialState, action) => {
+export default (state = initialState, action) => {
   switch (action.type) {
     case ADD_POST: {
       return {
@@ -34,7 +34,6 @@ const reducer = (state = initialState, action) => {
       };
     }
     default:
-      break;
+      return state;
   }
 };
-export default reducer;

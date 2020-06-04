@@ -1,0 +1,1450 @@
+doctype html
+html(style={width: '100%', height: '100%'})
+  head
+    meta(charset='utf-8')
+    script(type='text/javascript', src="/js/vue2611.js")
+    script(src="https://unpkg.com/vue-select@latest")
+    link(rel="stylesheet" href="https://unpkg.com/vue-select@latest/dist/vue-select.css")
+    script(src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")
+    script(type="text/javascript", src="/js/shim.min.js")
+    script(type="text/javascript", src="/js/xlsx.full.min.js")
+    script(src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js")
+    script(type="text/javascript", src="/js/base64js.js")
+    script(type="text/javascript", src="/js/md5.js")
+    script(type="text/javascript", src="/js/jspdf-autotable.js")
+
+    //script(src="popper.min.js")
+    //script(src="bootstrap.min.js")
+
+    //link(rel='stylesheet', href='/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/css/test.css')
+    title 매니스탈링스 AI검사 무선스마트팩토리
+  body
+    .nav
+      .flexdiv
+        .menu00(v-for="(e, i) in m1Title" v-on:click="setm1i(i)")
+          .
+            {{e}}
+        .menu01
+        .menu02
+          label 이름/직번
+            input(type="text", v-model="loginname")
+          label 비밀번호
+            input(type="text", v-model="loginpw")
+          button(v-on:click="login") 로그인
+
+      .nav2
+        .menu2()
+          button(v-for="(e, i) in m2Title[m1i]", v-on:click="setm2i(i)") {{e}} {{i}}
+            
+      .nav3
+        .nav3sub(v-for="e in hlist")
+          button {{m2Title[e.m1i][e.m2i]}}입니다.
+          input(type="checkbox", v-bind:value="e.select", v-model="e.select")
+      .nav4.h100
+        .
+          {{hlist}}
+        .flexdiv
+          .flexcol(v-bind:class="{ 'del': e.del }" v-for="(e, i) in hlist" v-if="e.select")
+            .flexcol(v-if="e.m1i == -1 && e.m2i == -1")
+              div(v-for="e in comboMap")
+                .
+                  {{e[1]}}
+            .flexcol(v-else v-for="(onem3, m3i) in m2list[e.m1i][e.m2i]")
+              .search()
+                .nav5()
+                  .title
+                    span(v-if="m3Title[e.m1i][e.m2i].length != 0") {{m3Title[e.m1i][e.m2i][m3i]}}
+                  .searchg
+                    span(v-for="onecol in onem3")
+                      label(v-if="onecol.visible && !onecol.nickname.includes(';')") {{onecol.nickname}}
+                        select(v-if="onecol.isCombo", v-model="onecol.value")
+                          option(v-for="option in comboData[onecol.varname]", v-bind:value="option.comboIndex") {{option.comboItem}}
+                        button(v-else-if="onecol.isDate" @click="preparePopup(onecol.varname)") 검색
+                        input.a(v-else-if="onecol.isCheck" type="checkbox" @change="prepareCheckBox(onecol)" value = "y" v-model="onecol.value")
+                        input(v-else type="text", v-model="onecol.value")
+                      label(v-else-if="onecol.visible && onecol.nickname.includes(';')") {{onecol.nickname.split(';')[0]}}
+                        select(v-if="onecol.isCombo", v-model="onecol.value")
+                          option(v-for="option in comboData[onecol.varname]", v-bind:value="option.comboIndex") {{option.comboItem}}
+                        button(v-else-if="onecol.isDate" @click="preparePopup(onecol.varname)") 검색
+                        input.a(v-else-if="onecol.isCheck" type="checkbox" @change="prepareCheckBox(onecol)" value = "y" v-model="onecol.value")
+                        input(v-else type="text", v-model="onecol.value")
+                        label {{onecol.nickname.split(';')[1].replace(/_/g, ' ')}}
+
+
+                    button(v-on:click="search(e, m3i)") 검색
+                    button(v-on:click="refresh(e.m1i, e.m2i)") 새로고침11
+                  .title
+                    span() 테이블
+                    span(v-else) {{m2Title[e.m1i][e.m2i]}}
+                    .span
+                    button(v-on:click="excel") 엑셀로 다운로드
+                    button 그래프 {{m3i}}
+                    button(v-on:click="pdf") 프린트
+                    button 파일추가
+                    .span2
+                    button(v-on:click="fullscreen(i)", v-if="e.fullscreen") 전체화면해제
+                    button(v-on:click="fullscreen(i)", v-else) 전체화면
+                    .span
+                  //- 안보이는 주석 블록 //
+                  table()
+                    thead
+                      tr
+                      td() x
+                      td(v-for="(onecol, i) in m2list[e.m1i][e.m2i][m3i]") {{onecol.nickname}}
+                    tbody
+                      tr(v-for="(listrow, i) in list[e.m1i][e.m2i][m3i]")
+                        td(v-if="listrow.id.value > 1" v-bind:style="styleDlg", tabindex="0", @click="onMouseClick(e.m1i, e.m2i, m3i, listrow.id.value)", @mousedown="onMouseDown", @mousemove="onMouseMove", @mouseup="onMouseUp") x
+                        td(v-else v-bind:style="styleDlg", tabindex="0", @mousedown="onMouseDown(e.m1i, e.m2i, m3i, i, 0, listrow.id)", @mousemove="onMouseMove", @mouseup="onMouseUp") +행추가
+                        td(v-if="listcol.visibleInList" v-for="(listcol, varname, j) in listrow", v-bind:style="styleDlg")
+                          div(v-if="listcol.isCombo && listcol.hasOwnProperty('value')")
+                            select(v-if="listcol.status=='c'", v-on:keyup.enter="onSelectPressEnter(listcol)" @change="onSelectChange(e.m1i, e.m2i, m3i, i, j, listcol)", v-model="listcol.value")
+                              option(v-if="listcol.tmpIsShowComboItem[option.comboIndex]" v-for="option in comboData[listcol.varname]", v-bind:value="option.comboIndex" ) {{option.comboItem}}
+                            input(v-else-if="listcol.value == 0" type="text" @keyup.enter="edit(e.m1i, e.m2i, m3i, i, j, listcol)" v-model="listcol.value")
+                            input(v-else-if="typeof listcol.value == 'string' && listcol.value.startsWith('[수정입력]')" type="text" @keyup.enter="edit(e.m1i, e.m2i, m3i, i, j, listcol)" v-model="listcol.value")
+                            input(v-else-if="listcol.status != 'c' && listcol.value != null" style={"color": "red"} type="text" @mousedown="onMouseDown(listcol, true)" @keyup.enter="edit(e.m1i, e.m2i, m3i, i, j, listcol)" :value="comboData[listcol.varname][listcol.value].comboItem")
+                            input(v-else-if="listcol.status != 'c'" type="text" @mousedown="onMouseDown(listcol, true)" @keyup.enter="edit(e.m1i, e.m2i, m3i, i, j, listcol)")
+
+                          div(v-else-if="listcol.isCombo")
+                            select(v-on:keyup.enter="onSelectPressEnter(listcol)" @change="onSelectChange(e.m1i, e.m2i, m3i, i, j, listcol)", v-model="listcol.value" )
+                              option(v-if="listcol.tmpIsShowComboItem[option.comboIndex] && option.comboItem == listcol.value" v-for="option in comboData[listcol.varname]", v-bind:value="option.comboIndex", v-model="listcol.value", selected="selected") {{option.comboItem}}
+                              option(v-else-if="listcol.tmpIsShowComboItem[option.comboIndex]" v-for="option in comboData[listcol.varname]", v-bind:value="option.comboIndex", v-model="listcol.value") {{option.comboItem}}
+
+
+                          .buttong(v-else-if="listcol.isFile")
+                            form(action='http://localhost:7777/upload' method='post' enctype="multipart/form-data")
+                              input(type='file' name='file0')
+                              input(type='submit')
+                            a(href="http://localhost:7777/filedown") 파일 다운로드
+                          input(v-else-if="listcol.isRadio" type="radio" name="a" @change="onRadioClick(e.m1i, e.m2i, m3i, i, listcol)" value = "y" v-model="listcol.value")
+                          input(v-else-if="listcol.isCheck && listcol.value == 'y'" type="checkbox" @change="prepareCheckBox(listcol, true, e.m1i, e.m2i, m3i, i, j)" value = "y" v-model="listcol.value" checked)
+                          input(v-else-if="listcol.isCheck" type="checkbox" @change="prepareCheckBox(listcol, true, e.m1i, e.m2i, m3i, i, j)" value = "y" v-model="listcol.value")
+                          button(v-else-if="listcol.isButton && listcol.value == null" @click="preparePopup(listcol.varname, i)") 검색
+                          button(v-else-if="listcol.isButton && listcol.value != undefined" @click="preparePopup(listcol.varname, i)") {{listcol.value}}
+                          input(v-else-if="varname.includes('serial')", type="text", @keyup.enter="edit(e.m1i, e.m2i, m3i, i, j, listcol)", v-model="listcol.value.substr(0, 2)")
+                          input(v-else, type="text", @keyup.enter="edit(e.m1i, e.m2i, m3i, i, j, listcol)", v-model="listcol.value")
+
+
+
+            .search(v-else-if="e.d == 1")
+              .title
+                span {{mlist2[m2i][e].b}}
+                .span
+                button 엑셀
+                button 그래프
+                button(v-on:click="pdf") 프린트
+                button 파일추가
+                button(v-on:click="fullscreen(m2, e)") 전체화면                
+
+
+              select(name="combo1")
+                option(v-for="e in com1", value="{{e.a}}") {{e.b}}
+              select(name="combo1")
+                option(v-for="e in com1", value="{{e.a}}") {{e.b}}
+            .search(v-else-if="e.d == 2")
+              .title
+                span {{mlist2[m2i][e].b}}
+              select(name="combo1")
+                option(v-for="e in com1", value="{{e.a}}") {{e.b}}
+            .search(v-else-if="e.d == 3")
+              .title
+                span {{mlist2[m2i][e].b}}
+              select(name="combo1")
+                option(v-for="e in com1", value="{{e.a}}") {{e.b}}
+      div(id="modal-group")
+        modal(v-if="showModal == 'setDate'" @close="findDate()")
+          div(slot="body")
+            .flexdiv
+              .flexcol
+                .
+                  시작일
+                br
+                input.startdate(name="startdate" type="text", :max="6" @keydown="OnlyPress09" @keyup.enter="moveFocus('enddate')" v-model="startDate" placeholder="200101")
+                
+              .flexcol
+                .
+                  종료일
+                br
+                input.enddate(name="enddate" type="text", :max="6" @keydown="OnlyPress09" @keyup.enter="findDate()" v-model="endDate" placeholder="201231")
+
+        modal(v-else-if="showModal == 'setOrderNo'" @close="showModal = false")
+          div(slot="body")
+            .flexcol(v-if="m3i == 0" v-for="onem3, m3i in m2list[modalM1][modalM2]")
+              .search()
+                .nav5()
+                  .title
+                    span(v-if="m3Title[modalM1][modalM2].length != 0") {{m3Title[modalM1][modalM2][0]}}
+                  .searchg
+                    span(v-for="onecol in onem3")
+                      label(v-if="onecol.visible") {{onecol.nickname}}
+                        select(v-if="onecol.isCombo", v-model="onecol.value")
+                          option(v-for="option in comboData[onecol.varname]", v-bind:value="option.comboIndex") {{option.comboItem}}
+                        input.a(v-else-if="onecol.isCheck" type="checkbox" @change="prepareCheckBox(onecol)" value = "y" v-model="onecol.value")
+                        input(v-else type="text", v-model="onecol.value",)
+
+
+                    button(v-on:click="search(2, 4, 0)") 검색
+                    button(v-on:click="refresh(modalM1, modalM2)") 새로고침
+                  .title
+                    span() 테이블
+                    span(v-else) {{m2Title[modalM1][modalM2]}}
+                    .span
+                    button(v-on:click="excel") 엑셀로 다운로드
+                    button 그래프 {{m3i}}
+                    button(v-on:click="pdf") 프린트
+                    button 파일추가
+                    .span2
+                    button(v-on:click="fullscreen()", v-if="true") 전체화면해제
+                    button(v-on:click="fullscreen()", v-else) 전체화면
+                    .span
+                  //- 안보이는 주석 블록 탭 간격 주의//
+                  table()
+                    thead
+                      tr
+                      td() 선택
+                      td(v-if="onecol.visible" v-for="(onecol, i) in m2list[modalM1][modalM2][0]") {{onecol.nickname}}
+                    tbody
+                      tr(v-for="(listrow, i) in list[modalM1][modalM2][0]")
+                        //-td(v-if="listrow.id.value > 1" v-bind:style="styleDlg", tabindex="0", @click="onMouseClick(e.m1i, e.m2i, m3i, listrow.id.value)", @mousedown="onMouseDown", @mousemove="onMouseMove", @mouseup="onMouseUp") x//
+                        td(v-bind:style="styleDlg", tabindex="0", @mousedown="onMouseDown", @mousemove="onMouseMove", @mouseup="onMouseUp")
+                          input(type="radio" name="a" @change="onRadioClickOnModal(modalM1, modalM2, m3i, i)" value = "y")
+
+                        td(v-for="(listcol, varname, j) in listrow", v-bind:style="styleDlg", @mousedown="onMouseDown", @mousemove="onMouseMove", @mouseup="onMouseUp")
+                          div(v-if="listcol.varname != undefined && listcol.visibleInList")
+                            div(v-if="listcol.isCombo && listcol.hasOwnProperty('value')")
+                              select(v-if="listcol.status=='c'", v-on:keyup.enter="onSelectPressEnter(listcol)" @change="onSelectChange(modalM1, modalM2, m3i, i, j, listcol)", v-model="listcol.value")
+                                option(v-if="listcol.tmpIsShowComboItem[option.comboIndex]" v-for="option in comboData[listcol.varname]", v-bind:value="option.comboIndex" ) {{option.comboItem}}
+                              input(v-else-if="listcol.value == 0" type="text" @keyup.enter="edit(modalM1, modalM2, m3i, i, j, listcol)" v-model="listcol.value")
+                              input(v-else-if="typeof listcol.value == 'string' && listcol.value.startsWith('[수정입력]')" type="text" @keyup.enter="edit(modalM1, modalM2, m3i, i, j, listcol)" v-model="listcol.value")
+                              input(v-else-if="listcol.status != 'c' && listcol.value != null" type="text" @mousedown="onMouseDown(listcol, true)" :value="comboData[listcol.varname][listcol.value].comboItem")
+                              input(v-else-if="listcol.status != 'c' && listcol.value == null" type="text" @mousedown="onMouseDown(listcol, true)")
+
+                            div(v-else-if="listcol.isCombo")
+                              select(v-on:keyup.enter="onSelectPressEnter(listcol)" @change="onSelectChange(modalM1, modalM2, m3i, i, j, listcol)", v-model="listcol.value" )
+                                option(v-if="listcol.tmpIsShowComboItem[option.comboIndex] && option.comboItem == listcol.value" v-for="option in comboData[listcol.varname]", v-bind:value="option.comboIndex", v-model="listcol.value", selected="selected") {{option.comboItem}}
+                                option(v-else-if="listcol.tmpIsShowComboItem[option.comboIndex]" v-for="option in comboData[listcol.varname]", v-bind:value="option.comboIndex", v-model="listcol.value") {{option.comboItem}}
+
+
+                            .buttong(v-else-if="listcol.isFile")
+                              form(action='http://localhost:7777/upload' method='post' enctype="multipart/form-data")
+                                input(type='file' name='file0')
+                                input(type='submit')
+                              a(href="http://localhost:7777/filedown") 파일 다운로드
+                            input(v-else-if="listcol.isRadio" type="radio" name="a" @change="onRadioClick(modalM1, modalM2, m3i, i, listcol)" value = "y" v-model="listcol.value")
+                            input(v-else-if="listcol.isCheck && listcol.value == 'y'" type="checkbox" @change="prepareCheckBox(listcol, true, modalM1, modalM2, m3i, i, j)" value = "y" v-model="listcol.value" checked)
+                            input(v-else-if="listcol.isCheck && listcol.value == 'n'" type="checkbox" @change="prepareCheckBox(listcol, true, modalM1, modalM2, m3i, i, j)" value = "y" v-model="listcol.value")
+                            input.a(v-else-if="listcol.isCheck && listcol.value == 'a'" type="checkbox" @change="prepareCheckBox(listcol, true, modalM1, modalM2, m3i, i, j)" value = "y" v-model="listcol.value")
+                            button(v-else-if="listcol.isButton" @click="preparePopup(listcol.varname)") 팝업창으로 선택
+                            input(v-else, type="text", @keyup.enter="edit(modalM1, modalM2, m3i, i, j, listcol)", v-model="listcol.value")
+
+          h3(slot="header") custom header
+        modal(v-else-if="showModal == 'setUnitPrice'" @close="showModal = false")
+          div(slot="body")
+            .flexcol(v-if="m3i == 0" v-for="onem3, m3i in m2list[modalM1][modalM2]")
+              .search()
+                .nav5()
+                  .title
+                    span(v-if="m3Title[modalM1][modalM2].length != 0") {{m3Title[modalM1][modalM2][0]}}
+                    button(v-on:click="search(2, 5, 0)") 검색
+                    button(v-on:click="refresh(modalM1, modalM2)") 새로고침1
+                  //- 안보이는 주석 블록 탭 간격 주의//
+                  table()
+                    thead
+                      tr
+                      td() 선택
+                      td(v-if="onecol.visibleInList" v-for="(onecol, i) in m2list[modalM1][modalM2][0]") {{onecol.nickname}}
+                    tbody
+                      tr(v-for="(listrow, i) in list[modalM1][modalM2][0]")
+                        //-td(v-if="listrow.id.value > 1" v-bind:style="styleDlg", tabindex="0", @click="onMouseClick(e.m1i, e.m2i, m3i, listrow.id.value)", @mousedown="onMouseDown", @mousemove="onMouseMove", @mouseup="onMouseUp") x//
+                        td(v-bind:style="styleDlg", tabindex="0", @mousedown="onMouseDown", @mousemove="onMouseMove", @mouseup="onMouseUp")
+                          input(type="radio" name="a" @change="onRadioClickOnModal(modalM1, modalM2, m3i, i, listIndex)" value = "y")
+
+                        td(v-if="listcol.visibleInList" v-for="(listcol, varname, j) in listrow" v-bind:style="styleDlg", @mousedown="onMouseDown", @mousemove="onMouseMove", @mouseup="onMouseUp")
+                          div(v-if="listcol.varname == undefined")
+                            .
+                              {{listcol}} {{j}} {{modalM1}} {{modalM2}}
+                          div(v-else-if="true")
+                            div(v-if="listcol.isCombo && listcol.hasOwnProperty('value')")
+                              select(v-if="listcol.status=='c'", v-on:keyup.enter="onSelectPressEnter(listcol)" @change="onSelectChange(modalM1, modalM2, m3i, i, j, listcol)", v-model="listcol.value")
+                                option(v-if="listcol.tmpIsShowComboItem[option.comboIndex]" v-for="option in comboData[listcol.varname]", v-bind:value="option.comboIndex" ) {{option.comboItem}}
+                              input(v-else-if="listcol.value == 0" type="text" @keyup.enter="edit(modalM1, modalM2, m3i, i, j, listcol)" v-model="listcol.value")
+                              input(v-else-if="typeof listcol.value == 'string' && listcol.value.startsWith('[수정입력]')" type="text" @keyup.enter="edit(modalM1, modalM2, m3i, i, j, listcol)" v-model="listcol.value")
+                              input(v-else-if="listcol.status != 'c' && listcol.value != null" type="text" @mousedown="onMouseDown(listcol, true)" :value="comboData[listcol.varname][listcol.value].comboItem")
+                              input(v-else-if="listcol.status != 'c' && listcol.value == null" type="text" @mousedown="onMouseDown(listcol, true)")
+
+                            div(v-else-if="listcol.isCombo")
+                              select(v-on:keyup.enter="onSelectPressEnter(listcol)" @change="onSelectChange(modalM1, modalM2, m3i, i, j, listcol)", v-model="listcol.value" )
+                                option(v-if="listcol.tmpIsShowComboItem[option.comboIndex] && option.comboItem == listcol.value" v-for="option in comboData[listcol.varname]", v-bind:value="option.comboIndex", v-model="listcol.value", selected="selected") {{option.comboItem}}
+                                option(v-else-if="listcol.tmpIsShowComboItem[option.comboIndex]" v-for="option in comboData[listcol.varname]", v-bind:value="option.comboIndex", v-model="listcol.value") {{option.comboItem}}
+
+
+                            input(v-else-if="listcol.isRadio" type="radio" name="a" @change="onRadioClick(modalM1, modalM2, m3i, i, listcol)" value = "y" v-model="listcol.value")
+                            input(v-else-if="listcol.isCheck && listcol.value == 'y'" type="checkbox" @change="prepareCheckBox(listcol, true, modalM1, modalM2, m3i, i, j)" value = "y" v-model="listcol.value" checked)
+                            input(v-else-if="listcol.isCheck && listcol.value == 'n'" type="checkbox" @change="prepareCheckBox(listcol, true, modalM1, modalM2, m3i, i, j)" value = "y" v-model="listcol.value")
+                            input.a(v-else-if="listcol.isCheck && listcol.value == 'a'" type="checkbox" @change="prepareCheckBox(listcol, true, modalM1, modalM2, m3i, i, j)" value = "y" v-model="listcol.value")
+                            button(v-else-if="listcol.isButton && listcol.value == null" @click="preparePopup(listcol.varname)") 검색
+                            button(v-else-if="listcol.isButton && listcol.value != undefined" @click="preparePopup(listcol.varname)") {{listcol.value}}
+                            input(v-else, type="text", @keyup.enter="edit(modalM1, modalM2, m3i, i, j, listcol)", v-model="listcol.value")
+
+          h3(slot="header") custom header
+
+    .d(v-html="title")
+    table.calender
+      tr()
+        td(@click="lt") &gt;
+        td(colspan="5") {{today.getFullYear()}}년 {{today.getMonth()+1}}월 {{today.getDay()}}일
+        td(@click="gt") &gt;
+      tr(v-for="(e, i) in week")
+        td(v-for="(e, j) in day", v-if="e+i*7 <= endDay") {{e + i * 7}}
+
+
+
+
+  script(type="text/x-template" id="modal-template")
+    transition(name="modal")
+      div(class="modal-mask")
+        div(class="modal-wrapper")
+          div(class="modal-container")
+
+            div(class="modal-header")
+              slot(name="header")
+                .
+                  default header
+
+            div(class="modal-body")
+              slot(name="body")
+                .
+                  default body
+
+            div(class="modal-footer")
+              slot(name="footer")
+                .
+                  default footer
+              button(class="modal-default-button" @click="$emit('close')") 닫기
+  script.
+    Vue.component('modal', {
+      template: '#modal-template'
+    })
+
+    let token = undefined
+    let axiosAddr = "#{axiosAddr}"
+
+
+
+
+    //alert(JSON.stringify(tmpIsShowComboItem))
+    /*axios.post('http://localhost:7777/join', {
+      base: {
+        name: "ddd",
+        no: 10,
+        pw: "asdf"
+      }
+    })
+    .then(function (res) {
+      alert(res.data)
+    })*/
+    function selectOpen(element) {
+
+      var element = $("select")[0], worked = false;
+      if (document.createEvent) { // all browsers
+          let event = new MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            views: window,
+            detail: 0,
+            screenX: 0,
+            screenY: 0,
+            clientX: 0,
+            clientY: 0,
+            ctrlKey: false,
+            altKey: false,
+            shiftKey: false,
+            metaKey: false,
+            button: 0,
+            relatedTarget: null
+          });
+          worked = element.dispatchEvent(event);
+      } else if (element.fireEvent) { // ie
+          worked = element.fireEvent("onmousedown");
+      }
+    }
+
+    function Base64Encode(str, encoding = 'utf-8') {
+        var bytes = new (TextEncoder || TextEncoderLite)(encoding).encode(str);        
+        return base64js.fromByteArray(bytes);
+    }
+    function clone(source) {
+      var target = {}
+      for (let i in source) {
+        if (source[i] != null && typeof source[i] === "object") {
+          target[i] = clone(source[i]) // resursion
+        } else {
+          target[i] = source[i]
+        }
+      }
+      return target
+    }
+    function getArrayRank(a)
+    {
+      if(a.length == undefined)
+        return []
+      if(a[0].length == undefined)
+        return [a.length]
+      if(a[0][0].length == undefined)
+        return [a.length, a[0].length]
+      return [a.length, a[0].length, a[0][0].length]
+    }
+    function getIndexFromArray(arr, value, varname)
+    { 
+      if(varname == undefined) 
+      {
+        varname = "value"        
+      }
+      //alert("arr " + JSON.stringify(arr))
+      //alert("value " + JSON.stringify(value))
+      //alert("varname " + JSON.stringify(varname))
+
+      //alert("arr[i.toString()]= " + JSON.stringify(arr[i.toString()]))
+      for(let e in arr)
+      {
+        //alert("arr[e][varname]=" + arr[e][varname])
+        if(arr[e].isShow != undefined)
+          if(!arr[e].isShow) continue
+        if(arr[e][varname] === value)
+        {
+          if(varname == undefined)
+            return arr[e].comboIndex
+          return e
+        }
+
+      }
+      return undefined
+    }
+    function setComboArrRev(origin, rev)
+    {
+      rev = []
+      for(e in origin)
+      {
+        if(origin[e].isShow)
+          rev.push(origin[e])
+      }
+    }
+
+
+    let tb = new Vue({
+      el: 'table.calender',
+      data: {
+        styleDlg: {
+          "background-color": "blue",
+          visibility: "visible"
+        },
+        week: [0, 1, 2, 3, 4],
+        day: [1, 2, 3, 4, 5, 6, 7],
+        endDay: 31,
+        today: new Date(),
+        y:1,
+        m:1,
+        d:1
+      },
+      methods: {
+        sync: () => {
+          tb.y = tb.today.getFullYear()
+          tb.m = tb.today.getMonth()
+        },
+        lt: () => {         
+          tb.sync()
+          tb.today = new Date()
+          setTimeout(() => {
+            tb.today = new Date(tb.y,tb.m,1)
+            tb.today.setMonth(tb.today.getMonth() - 1)
+          }, 1)
+        },
+        gt: () => {
+          tb.sync()
+          tb.today = new Date()
+          setTimeout(() => {
+            tb.today = new Date(tb.y,tb.m,1)
+            tb.today.setMonth(tb.today.getMonth() + 1)
+            tb.today.setDay(1)
+          }, 1)
+        }
+      },
+      created() {
+      }
+
+    })
+    //p.$refs.aa.innerText = "ddd"
+
+    let nav = new Vue({
+      el: '.nav',
+      data: {
+        showModal: false,
+        listIndex: undefined,
+        startDate: '',
+        endDate: '',
+        modalM1: 2,
+        modalM2: 4,
+        m1len:10,
+        m2len:10,
+        m3len:10,
+        valueBeforeSelectEdit:"",
+        m1i: 0,
+        flag: 0,
+        flag2: 0,
+        mmFlag: true,
+        m2list: [],
+        list: [],
+        m1Title: [],
+        m2Title: [],
+        searchtext0: undefined,
+        searchtext1: undefined,
+        searchtext2: undefined,
+        searchtext3: undefined,
+        loginname: undefined,
+        loginpw: undefined,
+        loginno: undefined,
+        ilist: [
+          { name: "설비조건", name1: "ddd", name2: "ddd" },
+          { name: "설비조건", name1: "ddd", name2: "ddd" },
+          { name: "설비조건", name1: "ddd", name2: "ddd" }
+        ],
+        hset: new Set(),
+        comboMap: new Map(),
+        text1to1Data: undefined,
+        hlist: [],
+        com1: [],
+        styleDlg: {
+          "background-color": "inherit",
+          visibility: "visible",
+          border: "1px solid #a2a7a5"
+        }
+
+      },
+      props: ['flag2'],
+      methods: {
+        load: (m1i, m2i, m3i, obj, callback) => {
+          
+          /*for(let i = 0; i < arr.length; i++)
+          {
+            where[arr[i].col.toString()] = arr[i].colvalue
+          }*/
+          let limit
+          if(obj == undefined)
+          {
+            obj = {}
+            alert(JSON.stringify(nav.m2list[m1i][m2i][m3i]))
+
+            for(i in nav.m2list[m1i][m2i][m3i])
+            {
+              let col = nav.m2list[m1i][m2i][m3i][i]
+              if(!col.visible) continue
+              if(col.value != undefined && col.value !== "")
+                if(col.varname != 'null')
+                  obj[col.varname] = col.value
+              if(col.isDate)
+                obj[col.varname] = nav.startDate + "~" + nav.endDate
+              if(col.isCheck)
+              {
+                obj[col.varname] = col.value
+                if(obj[col.varname] == null)
+                  obj[col.varname] = false
+              }
+              if(col.varname == 'null')
+              {
+                limit = parseInt(col.value)
+              }
+
+              if(col.varname == 'isorderend' || col.varname == 'issalesend')
+                alert("isorderend?" + col.value)
+            }
+
+          }
+          alert("인덱스 = (" + m1i + " " + m2i + " " + m3i + ") where절 오브젝트 최종 = " + JSON.stringify(obj))
+          //alert("cb_material2code=" + JSON.stringify(nav.comboData["cb_material2code"]))
+          axios.post(axiosAddr + '/', {
+            where: obj,
+            limit: limit,
+            m1i: m1i,
+            m2i: m2i,
+            m3i: m3i
+          })
+          .then(function (res) {
+            //console.log("res.data=" + JSON.stringify(res.data))
+            var obj = {}
+            //console.log("nav.list=" + JSON.stringify(nav.list))
+
+            //res.data.unshift(res.data[0])
+            for(let i = 0; i < res.data.length; i++)
+              for(varname in res.data[i])
+              {
+                //alert("nav.m2list[m1i][m2i][m3i]=" + JSON.stringify(nav.m2list))
+                let value = res.data[i][varname]
+                if(value == undefined) value = null
+                //alert("res.data[i][varname]=" + JSON.stringify(res.data[i][varname]))
+                res.data[i][varname] = {}
+                e = res.data[i][varname]
+                //if(i == 0) value = null 첫 번째 줄 벨류 값 설정 부분
+                e.isCombo = false
+                e.isButton = false
+                e.isCheck = false
+                e.visibleInList = true
+
+                e.varname = varname
+                e.value = value
+                //alert("nav.m2list[m1i][m2i][m3i][varname]=" + JSON.stringify(nav.m2list[m1i][m2i][m3i]))
+                //if(nav.m2list[m1i][m2i][m3i].hasOwnProperty("id")) //.hasOwnProperty(varname)
+                  //alert("" + m1i + m2i + m3i + "/varname=" + varname)
+                //alert(JSON.stringify(nav.m2list[m1i][m2i][m3i][varname]))
+                //alert(m1i + m2i + m3i + " varname=" + varname)
+                let m2e = nav.m2list[m1i][m2i][m3i][varname]
+                if(m2e == undefined)
+                {
+                  alert("undefined!!=" + m1i + " " + m2i + " " + m3i + " " + varname)
+                }
+                if(!m2e.hasOwnProperty("isCombo"))
+                {
+                }
+                if(m2e.visibleInList != undefined)                  
+                {
+                  e.visibleInList = m2e.visibleInList
+                }
+                if(m2e.isCombo)
+                {
+                  //alert("i=" + i + " varname=" + varname + " e.index=" + e.index)
+                  let len = 99
+                  //Object.keys(nav.comboData[listcol.varname]).length 로 len을 구한다.
+                  e.tmpIsShowComboItem = []
+                  for(let i = 0; i < len; i++)
+                    e.tmpIsShowComboItem.push(true)
+                  e.isCombo = true
+                  e.status = "t"
+                }
+                if(m2e.isButton)
+                {
+                  e.isButton = true
+
+                }
+                if(m2e.isCheck)
+                {
+                  e.isCheck = true
+                  if(m2e.nickname == "수주종료여부")
+                    m2e.value = 'n'
+                  if(m2e.nickname == "매출종료여부")
+                    m2e.value = 'n'
+                  e.next = ''
+                }
+                if(m2e.isDate)
+                {
+                  e.isDate = true
+                }
+              }
+            //console.log("obj=" + JSON.stringify(obj))
+            nav.list[m1i][m2i][m3i] = res.data
+            console.log("res.data=" + JSON.stringify(nav.list[m1i][m2i][m3i]))
+            alert(JSON.stringify(nav.list[m1i][m2i][m3i][0]))
+            //console.log("first nav.list[m3i]=" + JSON.stringify(nav.list[m1i][m2i][m3i]))
+            //console.log("nav.m2list[m1i][m2i][m3i]=" + JSON.stringify(nav.m2list[m1i][m2i][m3i]))
+            
+            //console.log("seconde nav.list[m3i][1]=" + JSON.stringify(nav.list[m1i][m2i][m3i][1]))
+            //console.log("TEST=" + JSON.stringify(nav.list[0][0][0]))
+            nav.m2list = clone(nav.m2list)
+            nav.hlist = clone(nav.hlist)
+            nav.list = clone(nav.list)
+            //alert("material1code콤보=" + JSON.stringify(nav.comboData["cb_material1code"]))
+            //if(callback != undefined) callback()
+
+          })
+        },
+        prepareCheckBox: (listcol, isEdit, m1i, m2i, m3i, rowi, coli) => {
+          //let m2liste = nav.m2list[m1i][m2i][m3i][listcol.varname]
+          if(listcol.isCheck)
+          {
+            if(listcol.value == false && listcol.next == true)
+            {
+              var three = document.querySelector('input.a')
+              if(Array.isArray(three))
+                three = three[0]
+              three.indeterminate = true                
+              listcol.value = 'a'
+              listcol.next = false
+              return
+            }
+            if(listcol.value == true)
+            {
+              listcol.next = true
+            }
+          }
+          if(isEdit == true)
+            nav.edit(m1i, m2i, m3i, rowi, coli, listcol)
+        },
+        edit: (m1i, m2i, m3i, rowi, coli, listcol) => {
+          let url = [m1i, m2i, m3i].join()
+          alert("edit func parameter(m1i, m2i, m3i, rowi, coli, listcol, listcol.new, listcol.varname, url) = " + [m1i, m2i, m3i, rowi, coli, listcol, listcol.new, listcol.varname, url].join())
+          let listrow0 = nav.list[m1i][m2i][m3i][0]
+          let m2liste = nav.m2list[m1i][m2i][m3i][listcol.varname]
+          let obj = {}
+          let objWithComboIndex = {}
+          let comboIndex
+          //let index = listcol.value
+          for(varname in listrow0)
+          {
+            obj[varname] = listrow0[varname].value
+            objWithComboIndex[varname] = listrow0[varname].value
+            if(varname.startsWith("cb_"))
+              if(typeof listrow0[varname].value == 'string')
+              {
+                objWithComboIndex[varname] = Object.keys(nav.comboData[varname]).length
+                alert("varname=" + varname + " len=" + Object.keys(nav.comboData[varname]).length)
+              }
+            if(varname == 'id' && listrow0[varname].value == 1)
+            {
+              delete objWithComboIndex[varname]
+              delete obj[varname]
+            }
+          }
+
+          // 버그나면 항상 if문을 넘어 그 스코프에 도달하는지 먼저 체크.
+          if(parseInt(coli) > 0 && listcol.new == undefined) // 컬럼명 id가 아니라는 것은 행추가 버튼을 누르지 않았다는 것이다.
+          {
+            //자동완성
+            if(listcol.varname.includes('code') && ![].includes(url))
+            {
+              alert("자동완성시작~")
+              let listrow = nav.list[m1i][m2i][m3i][rowi]
+              let autovarname = listcol.varname.substr(0, listcol.varname.length-4).substr(3, listcol.varname.length)
+              if(["biz"].includes(autovarname))
+                autovarname = "cb_" + autovarname
+              if(autovarname.startsWith('cb_'))
+              {
+                for(let i = 0; i < nav.comboData[autovarname].length; i++)
+                {
+                  e = nav.comboData[autovarname][i]
+                  if(e.comboItem2 == listcol.value)
+                  {
+                    listrow[autovarname].value = e.comboIndex
+                    break
+                  }
+                }
+
+              }
+              else
+              {
+                if(nav.text1to1Data.hasOwnProperty([listcol.varname]) )
+                {
+                  alert("autovarname=" + autovarname)
+                }
+                alert("자동완성 라이트? [cb_material1code][material1].get(12) " + nav.text1to1Data["cb_material1code"]["material1"].get("12"))
+                alert("[" + listcol.varname + "][" + autovarname + "].get(" + listcol.value + ")")
+                listrow[autovarname].value = nav.text1to1Data[listcol.varname][autovarname].get(listcol.value.toString())
+                if(listrow[autovarname].value == undefined)
+                  listrow[autovarname].value = nav.text1to1Data[autovarname][listcol.varname].get(listcol.value.toString())
+                
+              }
+              alert("자동완성~" + listrow[autovarname].value)
+            }
+            if(listcol.varname == "orderno" && ["2,1,0"].includes(url))
+            {
+               alert("listcol.varname=" + listcol.varname + " url=" + url)
+              //수주번호 입력시 수주일련번호 자동생성
+              /*delete listrow0["orderserialno"]  애초에 객체였는데 이렇게 하면 원시타입으로 바뀌어 버림.
+              listrow0["orderserialno"] = "0000"*/
+              let nowDate = new Date().getTime()
+              listrow0["orderserialno"].value = md5(nowDate)
+              listrow0["orderserialno"] = clone(listrow0["orderserialno"]) // 동작함. 최종 참조 값이 바뀜과 동시에 어떠한 변경사항도 없어야 함.
+              return
+            }
+          }
+
+          if( (rowi == 0 && ((typeof coli === 'string' && coli == "id") || (typeof coli === 'number' && coli == 0 )))
+            || ["0,8,0"].includes(url))
+          { // 행추가 버튼 클릭시 또는 0,8,0 기타정의 콤보 추가시
+            {
+              let listrow = nav.list[m1i][m2i][m3i][rowi]              
+              let autovarname = listcol.varname.substr(0, listcol.varname.length-4).substr(3, listcol.varname.length)
+
+              for(varname in listrow)
+              {
+                let e = listrow[varname]
+                alert("!e.value" + e.value)
+                if(!e.value) continue
+                alert("varname=" + varname)
+
+                if(listrow[varname].isCombo && typeof listrow[varname].value === 'string')
+                  listrow[varname].newIndex = Object.keys(nav.comboData[ varname ]).length
+
+                alert("url=" + url)
+                if(varname.includes('code') && ["0,0,0", "0,1,0", "0,2,0", "0,3,0", "0,4,0", "0,5,0", "0,6,0", "0,7,0", "0,8,0", "0,9,0"].includes(url))
+                {
+                  let autovarname = varname.substr(0, varname.length-4).substr(3, varname.length)
+                  alert("autovarname=" + autovarname)
+                  if(!listrow.hasOwnProperty(autovarname)) continue
+
+                  if(nav.text1to1Data.hasOwnProperty(varname) && nav.text1to1Data[varname].hasOwnProperty(autovarname))
+                    if(nav.text1to1Data[varname][autovarname].get(listrow[varname].value.toString()))
+                      continue
+                  if(nav.text1to1Data.hasOwnProperty(autovarname) && nav.text1to1Data[varname].hasOwnProperty(varname))
+                    if(nav.text1to1Data[autovarname][varname].get(listrow[autovarname].value.toString()))
+                      continue
+
+                  alert("not coninute : orgin=" + varname + " counter=" + autovarname + " --- continue")
+
+
+                  alert("hahaha/ce")
+
+                  let value1 = listrow[varname].value, value2 = listrow[autovarname].value
+                  if(listrow[varname].hasOwnProperty("newIndex"))
+                    value1 = listrow[varname].newIndex
+                  if(listrow[autovarname].hasOwnProperty("newIndex"))
+                    value2 = listrow[autovarname].newIndex
+
+
+                  axios.post(axiosAddr + '/ce', {
+                    m1i: 101,
+                    m2i: 0,
+                    m3i: 0,
+                    base: {varname1: varname, varname2: autovarname, value1: value1, value2: value2},
+                  })
+                  .then((res) => {
+                    alert("ce!" + m1i + m2i)
+                    listcol.new = undefined
+                    alert("listcol.new = undefined 1")
+                    //nav.refresh(m1i, m2i)
+                  })
+                  axios.post(axiosAddr + '/ce', {
+                    m1i: 101,
+                    m2i: 0,
+                    m3i: 0,
+                    base: {varname2: varname, varname1: autovarname, value1: value2, value2: value1},
+                  })
+                  .then((res) => {
+                    alert("ce!" + m1i + m2i)
+                    listcol.new = undefined
+                    alert("listcol.new = undefined 2")
+                    //nav.refresh(m1i, m2i)
+                  })
+
+
+                  // 현재 컬럼 객체만 필요한 경우 listcol, 현재 행 전체 컬럼에 접근해야 할 경우 listrow[varname]
+                  // 추가 사항 coli, rowi도 파라미터로 제공될 수 있으나 coli는 varname 문자열 값이 대입되는 버그 있음.
+                }
+              }
+
+            }
+            if(typeof listcol.value === 'string' && listcol.value == '')
+              return
+            for(varname in nav.m2list[m1i][m2i][m3i])
+            {
+              let listr = nav.list[m1i][m2i][m3i][0][varname]
+              let m2liste = nav.m2list[m1i][m2i][m3i][varname]
+              let listcol = nav.list[m1i][m2i][m3i][0][varname]
+              if(varname == 'id') continue
+              //alert("listcol=" + JSON.stringify(listcol))
+              alert("자 콤보 인서트 컬럼명=" + varname + " isCombo=" + m2liste.isCombo + " new?=" + listcol.new)
+              if(!m2liste.isCombo) //(원래 콤보가 아닌) 텍스트 박스 INSERT - 첫번째 줄
+              {
+              }
+              else if(m2liste.isCombo && listcol.new != undefined ) // 콤보 아이템 INSERT - 첫번째 줄
+              {
+                alert("자 콤보 아이템 인서트 listcol.new=" + listcol.new)
+                alert("obj=" + JSON.stringify(obj, null, 4))
+                let comboIndex = Object.keys(nav.comboData[listcol.varname]).length
+                alert("comboIndex=" + comboIndex + " listcol.value=" + listcol.value)
+                //alert("getIndexFromArray=" + JSON.stringify(nav.m2list[m1i][m2i][m3i]) + "listcol.varname=" + listcol.varname)
+                //let i = getIndexFromArray(nav.m2list[m1i][m2i][m3i], listcol.varname, "varname")
+                //alert("i=" + i)
+                //alert("nav.m2list[m1i][m2i][m3i][i]=" + JSON.stringify(nav.m2list[m1i][m2i][m3i][i]))
+                let comboGroupIndex = m2liste.comboGroupIndex // 체크!
+
+                //listcol.value.replace("[직접입력]", "")
+                axios.post(axiosAddr + '/ce', {
+                  m1i: 100,
+                  m2i: 0,
+                  m3i: 0,
+                  base: {varname: listcol.varname, comboindex: comboIndex, combogroupindex: comboGroupIndex, comboitem: listcol.value},
+                })
+                .then((res) => {
+                  alert("ce!" + m1i + m2i)
+                  listcol.new = undefined
+                  alert("listcol.new = undefined 3")
+
+                  //nav.refresh(m1i, m2i)
+                })
+              }
+              else if(listcol.isCombo && listcol.keyenter != undefined ) // 콤보 아이템 EDIT - 첫번째 줄
+              {
+                alert("listcol.keyenter=" + listcol.keyenter + " listcol.new=" + listcol.new)
+                comboIndex = listcol.keyenter
+                axios.post(axiosAddr + '/ed', {
+                  m1i: 100,
+                  m2i: 0,
+                  m3i: 0,
+                  where: {varname: listcol.varname, comboindex: comboindex},
+                  base: {comboitem: listcol.value.replace("[수정입력]", "")}
+                })
+                .then((res) => {
+                  alert("edit!" + m1i + m2i)
+                  listcol.keyenter = undefined
+                  nav.refresh(m1i, m2i)
+                })
+                return
+              }
+            }
+            alert("objWithComboIndex=" + JSON.stringify(objWithComboIndex))
+            alert([m1i, m2i, m3i].join())
+            axios.post(axiosAddr + '/ce', {
+              m1i: m1i,
+              m2i: m2i,
+              m3i: m3i,
+              base: objWithComboIndex,
+            })
+            .then((res) => {
+              alert("ce!" + m1i + m2i)
+              listcol.new = undefined
+              alert("listcol.new = undefined 4")
+
+              //nav.refresh(m1i, m2i)
+            })
+
+            return
+          }
+          if(rowi == 0)
+            return
+          alert("else=" + JSON.stringify(listcol))
+          let id = nav.list[m1i][m2i][m3i][rowi].id.value
+          //alert(JSON.stringify(nav.list, null, 4))
+          let tmp = {id: id, varname: listcol.varname, value: listcol.value, [listcol.varname]: listcol.value}
+          alert("tmp=" + JSON.stringify(tmp))
+          
+          axios.post(axiosAddr + '/ed', {
+            m1i: m1i,
+            m2i: m2i,
+            m3i: m3i,
+            where: {id: id},
+            base: {[listcol.varname]: listcol.value}
+          })
+          .then(function (res) {
+            alert("edit!")
+          })
+
+          /*if(comboindex == undefined)
+          {
+            alert("삐삐")
+            return
+          }
+          alert("comboindex=" + comboindex)*/
+
+        },
+        setm1i: (v) => {
+          nav.m1i = v
+          alert("m1i:" + v)
+        },
+        setm2i: (m2i) => {
+          let key = parseInt(nav.m1i*100) + parseInt(m2i)
+          key = key.toString()
+          alert("set element:" + key)
+          //alert(nav.hset)
+          if(!nav.hset.has(key))
+            nav.hset.add(key)
+          //let arr = [...nav.hlist.values()]
+          nav.hlist = []
+          for (let e of nav.hset.values())
+          {
+            let key = parseInt(e)
+            alert(Math.floor(key/100) + "/" + key%100)
+            //alert("asdfadf" + nav.mlist2[nav.m2][e].b)            
+            nav.hlist.push({select:true, m1i: Math.floor(key/100), m2i: key%100, kind:0, del:false, fullscreen: false})
+          }
+          alert("hlist:" + JSON.stringify(nav.hlist))
+
+          nav.load(nav.m1i, m2i, 0, {id: 1})
+
+        },
+        func3: () => {
+
+        },
+        search: (e, m3i, rev) => {
+          // a: obj or m1i
+          // b: m3i or m2i
+          // c: null or m3i
+
+          alert(e + " " + m3i + " " + rev)
+
+          if(rev != undefined)
+            nav.load(e, m3i, rev)
+          else
+            nav.load(e.m1i, e.m2i, m3i)
+        },
+        refresh: (m1i, m2i) => {
+          //***
+          axios.post(axiosAddr + '/arrdb', {
+            m1i: 0, m2i: 0
+          })
+          .then(function (res) {
+            nav.m2list = res.data.m2list
+            nav.load(nav.m1i, m2i, 0, {id: 1}, () => {
+              nav.list[m1i][m2i] = clone(nav.list[m1i][m2i])
+              nav.list = clone(nav.list)
+              nav.m2list[m1i][m2i] = clone(nav.m2list[m1i][m2i])
+              alert("ddd")
+            })
+          })
+
+        },
+        login: () => {          
+          axios.post(axiosAddr + '/idchk', {
+            base: {
+              nameno: nav.loginname,
+              pw: nav.loginpw
+            }
+          })
+          .then(function (res) {
+            axios.post(axiosAddr + '/verify', {
+              token: res.data
+            })
+            .then(function (res) {
+              alert(res.data)
+            })
+          })
+        },
+        excel: () => {
+          var data = []
+          nav.list.forEach((e) => {
+            data.push([e.id, e.name1, e.name2])
+          })
+
+          var wb = XLSX.utils.book_new(), ws = XLSX.utils.aoa_to_sheet(data)
+          ws.A1.v = "ddd"
+          XLSX.utils.book_append_sheet(wb, ws, "ws_name")
+          XLSX.writeFile(wb, "ddd.xlsx")
+
+        },
+        pdf: (i) => {
+          axios.post(axiosAddr + '/pdf', {
+          })
+          .then(function (res) {
+            let doc = new jsPDF()
+            doc.addFileToVFS("NanumSquareRoundR.ttf", res.data)  
+            doc.addFont("NanumSquareRoundR.ttf", "naver", "normal")
+            doc.addFont("NanumSquareRoundR.ttf", "naver", "bold")
+            doc.setFont("naver")
+
+            // Simple data example
+            var head = [nav.oTitle]
+            var body = []
+            for(let i = 0; i < nav.list.length; i++)
+            {
+              let arr = []
+              for(e in nav.list[i])
+              {
+                arr.push(nav.list[i][e])
+              }
+              alert(arr)
+              body.push(arr)
+            }
+            alert(body)
+                
+            doc.autoTable({head: head, body: body, styles:{font:'naver'}})
+
+            doc.save('table.pdf');
+
+          })
+        },
+        fullscreen: (e) => {
+          let i
+          if(nav.hlist[e].fullscreen)
+          {
+
+            for(i = 0; i < nav.hlist.length; i++)
+            {
+              nav.hlist[i].fullscreen = false
+              nav.hlist[i].del = false
+            }
+            return
+          }
+
+          for(i = 0; i < nav.hlist.length; i++)
+          {
+            if(i == e)
+            {
+              nav.hlist[i].del = false
+              nav.hlist[i].fullscreen = true
+            }
+            else
+            {
+              nav.hlist[i].del = true
+              nav.hlist[i].fullscreen = false
+            }
+          }
+        },
+        filedown: (e) => {
+        },
+        fileupload: (e) => {
+        },
+        onSelectPressEnter: (listcol) => {
+          alert("value=" + listcol.value)
+          if(listcol.value > 0)
+          {
+            listcol.value = "[수정입력]" + comboData[listcol.varname][index].comboItem
+            listcol.keyenter = index
+          }
+          else if(listcol.value == 0)
+          {
+            listcol.new = "o"
+            listcol.value = ""
+            alert("listcol.new 등록=" + JSON.stringify(listcol))
+          }
+          
+          if(Array.isArray(nav.listcol))
+          {
+            nav.listcol.push([])
+            nav.listcol.pop()
+          }
+          else
+            nav.listcol = clone(nav.listcol)
+        },
+        onSelectChange: (m1i, m2i, m3i, rowi, coli, listonecol) => { // 콤보 입력, 수정
+          alert("콤보 선택시 벨류값이 무엇인가? listonecol=" + JSON.stringify(listonecol))
+          alert("coli=" + coli)
+          //alert("nav.list[m1i][m2i][m3i][rowi][thisvarname]=" + JSON.stringify(nav.list[m1i][m2i][m3i][rowi][thisvarname]))
+          if(rowi > 0)
+            listonecol.status = 't'
+
+          if(listonecol.value == 0 || listonecol.value == undefined || listonecol.value == null || listonecol.value == '')
+          {
+            listonecol.status = 't'
+            //nav.onSelectPressEnter(listonecol)
+            nav.onSelectPressEnter(listonecol)
+            alert("after onSelectPressEnter")
+            if(Array.isArray(nav.listonecol))
+            {
+              nav.listonecol.push([])
+              nav.listonecol.pop()
+            }
+            else
+              nav.listonecol = clone(nav.listonecol)
+            //return
+          }
+          //colii = getIndexFromArray(nav.m2list[m1i][m2i][m3i], coli, "varname")
+          let m2e = nav.m2list[m1i][m2i][m3i][listonecol.varname]
+          let liste = nav.list[m1i][m2i][m3i][rowi]
+
+          //alert("nav.m2list[m1i][m2i][m3i][coli]=" + JSON.stringify(nav.m2list[m1i][m2i][m3i][colii]))
+          if(m2e.isGrandParent == undefined)
+            m2e.isGrandParent = false
+          if(m2e.isDummy == undefined)
+            m2e.isDummy = false
+          if(m2e.isURGUpdate == undefined)
+            m2e.isURGUpdate = false
+          if(!m2e.isDummy)
+          {
+            let varnameArr = []
+            let i = -1, targeti = 0
+            let flag = false
+            let combo2varname = undefined
+            for(varname in nav.m2list[m1i][m2i][m3i])
+            {
+              if(varname == listonecol.varname)
+              {
+                flag = true
+                continue
+              }
+              if(flag && varname.startsWith("cb_"))
+              {
+                if(nav.m2list[m1i][m2i][m3i][varname].isGrandParent)
+                {
+                  combo2varname = undefined
+                  break
+                }
+                else if(!nav.m2list[m1i][m2i][m3i][varname].isDummy)
+                {
+                  combo2varname = varname
+                  break
+                }
+              }
+            }
+            if(combo2varname)
+            {
+              let combo1varname = listonecol.varname
+              liste[combo1varname].tmpIsShowComboItem = clone(liste[combo1varname].tmpIsShowComboItem)
+              
+              if(Array.isArray(liste[combo1varname].tmpIsShowComboItem) && liste[combo1varname].tmpIsShowComboItem.length == 0)
+                liste[combo1varname].tmpIsShowComboItem.push(true)
+              else if(liste[combo1varname].tmpIsShowComboItem == undefined)
+                liste[combo1varname].tmpIsShowComboItem.push(true)
+
+              for(idx in nav.comboData[combo2varname])
+              {
+                e = nav.comboData[combo2varname][idx]
+                if(e.parent == listonecol.value || idx == 0)
+                  liste[combo2varname].tmpIsShowComboItem[idx] = true
+                else
+                  liste[combo2varname].tmpIsShowComboItem[idx] = false
+              }
+            }
+            //alert("varnameArr=" + JSON.stringify(varnameArr))
+            //alert("targeti=" + JSON.stringify(targeti))
+          }
+          if(m2e.isURGUpdate)
+          {
+            axios.post(axiosAddr + '/urg_', {
+              varname: listonecol.varname,
+              where: where,
+              m1i: m1i,
+              m2i: m2i,
+              m3i: m3i
+            })
+            .then(function (res) {
+
+            })
+          }
+          alert("rowi=" + rowi)
+          if(rowi == 0)
+          {
+            let url = [m1i, m2i, m3i].join()
+            let urlArr = ["0,0,0", "0,1,0", "0,2,0", "0,3,0", "0,6,0", "0,7,0"]
+            for(e in urlArr.join(" ").split(" "))
+            {
+              if(url == urlArr[e])
+              {
+                alert("첫번째 줄의 콤보를 선택하였으므로 리턴")
+                //return
+              }
+
+            }
+          }
+          alert("coli=" + coli)
+          nav.edit(m1i, m2i, m3i, rowi, coli, listonecol) 
+
+        },
+        onRadioClickOnModal: (modalM1, modalM2, m3i, modelListIndex, listIndex) => {
+          alert("onRadio Clicked!!\n" + JSON.stringify(nav.list[modalM1][modalM2][0][modelListIndex]))
+          let listModelr = nav.list[modalM1][modalM2][0][modelListIndex]
+          let listr = nav.list[2][2][0][listIndex]
+          if(modalM1 == 2 && modalM2 == 5)
+          {            
+            alert("onRadio Click in unitprice\n")
+            listr["unitprice"].value = listModelr["unitprice"].value
+            nav.list = clone(nav.list)
+
+            return
+          }
+          let obj2 = nav.list[2][2][0][0]
+          let obj1 = nav.list[modalM1][modalM2][0][modelListIndex]
+          for(varname in obj1)
+          {
+            let e1 = undefined
+            let e2 = undefined
+            if(obj1.hasOwnProperty(varname))
+              e1 = obj1[varname]
+            if(obj2.hasOwnProperty(varname))
+              e2 = obj2[varname]
+            if(e1 == undefined || e2 == undefined) continue
+            e2.value = e1.value
+          }
+          nav.list = clone(nav.list)
+        },
+        onRadioClick: (m1i, m2i, m3i, id, e) => {
+          let where = {}, base = {}
+          where.id = id        
+          base[e.varname] = "y"
+          alert(JSON.stringify(where))
+          alert(JSON.stringify(base))
+          axios.post(axiosAddr + '/ed', {
+            where: where,
+            base: base,
+            m1i: m1i,
+            m2i: m2i,
+            m3i: m3i
+          })
+          .then(function (res) {
+            let where = {}
+            where.fk_usergroup = id
+            nav.load(m1i, m2i, m3i + 1, where)
+          })
+        },
+        onMouseClick: (m1i, m2i, m3i, e) => {
+          alert(JSON.stringify(nav.list, null, 4))
+          alert(e)
+          if(typeof e == 'number')
+          {
+            axios.post(axiosAddr + '/rm', {
+              m1i: m1i,
+              m2i: m2i,
+              m3i: m3i,
+              where: {
+                id: e
+              }
+            })
+            .then(function (res) {
+              if (e > -1) nav.list.splice(e, 1)
+              if(res.data == 1)
+                nav.load(0, 0)
+              else
+                alert("기술상의 이유로 삭제 실패\n개발자에게 문의하십시오.")
+            })
+          }
+          else
+          {
+            if(e.target.hasOwnProperty(style))
+              e.target.style="border: 2px solid green"
+          }
+        },
+        onMouseDown: (e, isText, m3i, rowi, coli, listcol) => {
+          alert("isText=" + JSON.stringify(e))
+          if(typeof e === 'object' && isText)
+          {
+            e.status = 'c'
+            e = clone(e)
+            return
+          }
+          if(typeof e === 'object' && e.varname.includes("serial"))
+          {
+            e.value = e.value.substr(0, 5) + "..."
+
+          }          
+          if(listcol != undefined)
+          {            
+            let [m1i, m2i, m3i_, rowi_, coli_, listcol_] = [e, isText, m3i, rowi, coli, listcol]
+            alert(m1i + " " + m2i + " " + m3i_ + " " + rowi_ + " " + coli_ + " " + listcol_.varname)
+            nav.edit(m1i, m2i, m3i_, rowi_, coli_, listcol_)
+          }
+          
+
+          nav.styleDlg = {border: "1px solid #a2a7a5"}
+          nav.mmFlag = false
+          
+
+          if(e.hasOwnProperty("target"))
+            if(e.target.hasOwnProperty("style"))
+              e.target.style="border: 2px solid green"
+        },
+        onMouseMove: (e) => {
+          if(nav.mmFlag) return
+          e.target.style="border: 2px solid green"
+        },
+        onMouseUp: (e) => {
+          nav.mmFlag = true
+          e.target.style="border: 2px solid green"
+        },
+        preparePopup: (str, rowi) => {
+          if(str.includes("date"))
+            str = 'setDate'
+          else if(str == 'unitprice')
+          {
+            nav.modalM1 = 2
+            nav.modalM2 = 5
+            str = 'setUnitPrice'
+          }
+          else
+            str = 'setOrderNo'
+          nav.showModal = str
+          if(rowi == undefined)
+            nav.listIndex = 0
+          else
+            nav.listIndex = rowi
+          alert(nav.showModal)
+        },
+        moveFocus: (str) => {
+          document.getElementsByClassName(str)[0].focus()
+        },
+        findDate: () => {
+          if(nav.startDate == '')
+            nav.startDate = "000101"
+          if(nav.endDate == '')
+            nav.endDate = "991231"
+          nav.showModal = false
+
+        },
+        OnlyPress09: (e) => {
+          
+          if (e.key == "Backspace") return
+          if (e.key == "Meta") return
+          if (isNaN(parseInt(e.key)))
+            e.preventDefault()
+          //alert(e.currentTarget.placeholder)
+          //alert()
+
+          if(e.currentTarget.name == "enddate" && nav.startDate.length > e.currentTarget.max-1) 
+            e.preventDefault()
+          if(e.currentTarget.name == "startdate" && nav.endDate.length > e.currentTarget.max-1) 
+            e.preventDefault()
+
+        }
+
+      },
+      beforeCreate() {
+
+      },
+      created() {
+        for(let i = 0; i < this.m1len; i++)
+        {
+          this.list.push([])
+          for(let j = 0; j < this.m2len; j++)
+          {
+            this.list[i].push([])
+            for(let k = 0; k < this.m3len; k++)
+              this.list[i][j].push('a')
+          }
+        }
+        //nav.list = [ [[a,a, ] ], ]
+
+        //let i, m1namearr = ["공통", "판매", "자재", "제품"]
+        //let m2namearr = [["사업장", "공장", "라인", "부서", "창고"], ["판매계획", "영업주문", "매출관리", "로트관리", "영업창고"], ["자재창고등록","자재단가", "자재마스터", "거래명세표"], ["n/a", "n/a"]]
+        axios.post(axiosAddr + '/cb', {
+          r1: 0, r2: 0
+        })
+        .then((res) => {
+          nav.comboData = res.data.comboData
+          nav.text1to1Data = res.data.text1to1Data
+
+          
+
+          for(e1 in nav.text1to1Data)
+            for(e2 in nav.text1to1Data[e1])
+            {
+              //lert("e1e2=" + nav.text1to1Data[e1][e2])
+              nav.text1to1Data[e1][e2] = new Map(JSON.parse(nav.text1to1Data[e1][e2]))
+            }
+
+          alert("라이트? " + nav.text1to1Data["cb_biz"]["bizcode"].get("1"))
+        })
+        .catch((err) => {
+          alert(err)
+        })
+        axios.post(axiosAddr + '/arrdb', {
+          m1i: 0, m2i: 0
+        })
+        .then(function (res) {
+          nav.m2list = res.data.m2list
+
+          nav.m1Title = res.data.m1Title
+          nav.m2Title = res.data.m2Title
+          nav.m3Title = res.data.m3Title
+          alert("created() arrdb")
+          //console.log("created() m3Title=" + JSON.stringify(res.data.m3Title))
+          //console.log("created() m2list=" + JSON.stringify(res.data.m2list))
+          //alert(JSON.stringify(nav.m1Title))
+          //alert(JSON.stringify(nav.m2Title))
+          //comboGroupIndex varname isCombo comboindex parent
+          /*for(a = 0; a < nav.m2list.length; a++)
+            for(b = 0; b < nav.m2list[0].length; b++)
+              for(c = 0; c < nav.m2list[0][0].length; c++)
+                for(d = 0; d < nav.m2list[0][0][0].length; d++)
+                {
+                  e = nav.m2list[a][b][c][d]
+                  if(e.isCombo == undefined)
+                    alert("e.isCombo == undefined" + JSON.stringify(e))
+                  if(e.isCombo === true)
+                  {
+
+                    let key = e.comboGroupIndex + "_" + e.varname
+                    //alert(key + "e.comboArr=" + JSON.stringify(e.comboArr))
+                    nav.comboMap.set(key, e)
+                  }
+                  e.value = ""
+                }*/
+        })
+        
+     }
+    })
+    //menuc.func1()

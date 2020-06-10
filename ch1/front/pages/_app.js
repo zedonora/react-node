@@ -3,7 +3,7 @@ import Head from "next/head";
 import PropTypes from "prop-types";
 import withRedux from "next-redux-wrapper";
 import AppLayout from "../components/AppLayout";
-import { createStore, applyMiddleware } from "redux";
+import { createStore, applyMiddleware, compose } from "redux";
 import { Provider } from "react-redux";
 import reducer from "../reducers";
 

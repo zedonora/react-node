@@ -17,7 +17,11 @@ export const initialState = {
   user: null,
 };
 
+export const SIGN_UP = "SIGN_UP"; // 액션의 이름
+export const SIGN_UP_SUCCESS = "SIGN_UP_SUCCESS"; // 액션의 이름
 export const LOG_IN = "LOG_IN"; // 액션의 이름
+export const LOG_IN_SUCCESS = "LOG_IN_SUCCESS"; // 액션의 이름
+export const LOG_IN_FAILURE = "LOG_IN_FAILURE"; // 액션의 이름
 export const LOG_OUT = "LOG_OUT"; // 액션의 이름
 
 export const loginAction = {
@@ -25,6 +29,18 @@ export const loginAction = {
   data: {
     nickname: "kyg",
   },
+};
+
+export const signUpSuccessAction = {
+  type: SIGN_UP_SUCCESS,
+};
+
+export const loginSuccessAction = {
+  type: LOG_IN_SUCCESS,
+};
+
+export const loginFailureAction = {
+  type: LOG_IN_FAILURE,
 };
 
 export const logoutAction = {
@@ -39,6 +55,17 @@ export const signUpAction = (data) => {
 };
 export default (state = initialState, action) => {
   switch (action.type) {
+    case SIGN_UP: {
+      return {
+        ...state,
+        signUpData: action.data,
+      };
+    }
+    case SIGN_UP_SUCCESS: {
+      return {
+        ...state,
+      };
+    }
     case LOG_IN: {
       return {
         ...state,
@@ -46,17 +73,19 @@ export default (state = initialState, action) => {
         user: dummyUser,
       };
     }
+    case LOG_IN_SUCCESS: {
+      return {
+        ...state,
+      };
+    }
+    case LOG_IN_FAILURE: {
+      return {
+        ...state,
+      };
+    }
     case LOG_OUT: {
       return {
         ...state,
-        isLoggedIn: false,
-        user: null,
-      };
-    }
-    case SIGN_UP: {
-      return {
-        ...state,
-        signUpData: action.data,
       };
     }
     default:

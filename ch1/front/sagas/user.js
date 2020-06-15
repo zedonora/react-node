@@ -31,11 +31,13 @@ function* login() {
 }
 
 function* watchLogin() {
-  yield take(LOG_IN);
-  yield delay(2000);
-  yield put({
-    type: LOG_IN_SUCCESS,
-  });
+  while (true) {
+    yield take(LOG_IN);
+    yield delay(2000);
+    yield put({
+      type: LOG_IN_SUCCESS,
+    });
+  }
 }
 
 function* watchSignUp() {

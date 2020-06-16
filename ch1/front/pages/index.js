@@ -10,9 +10,24 @@ const Home = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    //dispatch({
-    //  type: "HELLO_SAGA",
-    //});
+    dispatch({
+      type: "HELLO_SAGA",
+    });
+    dispatch({
+      type: "HELLO_SAGA",
+    });
+    dispatch({
+      type: "HELLO_SAGA",
+    });
+    dispatch({
+      type: "HELLO_SAGA",
+    });
+    dispatch({
+      type: "HELLO_SAGA",
+    });
+    dispatch({
+      type: "HELLO_SAGA",
+    });
   }, []);
 
   return (

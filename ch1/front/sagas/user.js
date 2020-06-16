@@ -6,6 +6,7 @@ import {
   takeLatest,
   take,
   delay,
+  takeEvery,
 } from "redux-saga/effects";
 import { LOG_IN, LOG_IN_SUCCESS, LOG_IN_FAILURE } from "../reducers/user";
 
@@ -29,6 +30,25 @@ function* login() {
     });
   }
 }
+
+function* watchHello() {
+  yield takeLatest(HELLO_SAGA, function* () {
+    yield delay(1000);
+    yield put({
+      type: "BYE_SAGA",
+    });
+  });
+}
+
+// function *watchHello() {
+//   while(true) {
+//     yield take(HELLO_SAGA);
+//     console.log(1);
+//     console.log(2);
+//     console.log(3);
+//     console.log(4);
+//   }
+// }
 
 function* watchLogin() {
   while (true) {

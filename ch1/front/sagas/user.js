@@ -17,6 +17,7 @@ function loginAPI() {
 }
 function* login() {
   try {
+    //yield fork(logger); // logger는 내 기록을 로깅하는 함수, 10초 걸림
     yield call(loginAPI);
     yield put({
       // put은 dispatch 동일
@@ -31,13 +32,19 @@ function* login() {
   }
 }
 
-function* watchHello() {
-  yield takeLatest(HELLO_SAGA, function* () {
-    yield delay(1000);
-    yield put({
-      type: "BYE_SAGA",
-    });
+function* watchLogin() {
+  yield takeEvery(LOG_IN, login);
+}
+
+function* hello() {
+  yield delay(1000);
+  yield put({
+    type: "BYE_SAGA",
   });
+}
+
+function* watchHello() {
+  yield takeLatest(HELLO_SAGA, hello);
 }
 
 // function *watchHello() {
@@ -65,5 +72,5 @@ function* watchSignUp() {
 }
 
 export default function* userSaga() {
-  yield all([watchLogin(), watchSignUp()]);
+  yield all([fork(watchLogin), fork(watchHello)]);
 }

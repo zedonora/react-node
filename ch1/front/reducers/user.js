@@ -17,12 +17,15 @@ export const initialState = {
   user: null,
 };
 
-export const SIGN_UP = "SIGN_UP"; // 액션의 이름
+export const SIGN_UP_REQUEST = "SIGN_UP_REQUEST"; // 액션의 이름
 export const SIGN_UP_SUCCESS = "SIGN_UP_SUCCESS"; // 액션의 이름
-export const LOG_IN = "LOG_IN"; // 액션의 이름
+export const SIGN_UP_FAILURE = "SIGN_UP_FAILURE"; // 액션의 이름
+export const LOG_IN_REQUEST = "LOG_IN_REQUEST"; // 액션의 이름
 export const LOG_IN_SUCCESS = "LOG_IN_SUCCESS"; // 액션의 이름
 export const LOG_IN_FAILURE = "LOG_IN_FAILURE"; // 액션의 이름
-export const LOG_OUT = "LOG_OUT"; // 액션의 이름
+export const LOG_OUT_REQUEST = "LOG_OUT_REQUEST"; // 액션의 이름
+export const LOG_OUT_SUCCESS = "LOG_OUT_SUCCESS"; // 액션의 이름
+export const LOG_OUT_FAILURE = "LOG_OUT_FAILURE"; // 액션의 이름
 
 export const loginAction = {
   type: LOG_IN,

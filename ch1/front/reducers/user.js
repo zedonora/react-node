@@ -12,7 +12,7 @@ const dummyUser = {
   },
 };
 
-// 초기값1
+// 초기값
 export const initialState = {
   isLoggedIn: false, // 로그인 여부
   isLoggingOut: false, // 로그아웃 시도중
@@ -37,21 +37,9 @@ export const LOG_OUT_REQUEST = "LOG_OUT_REQUEST"; // 액션의 이름
 export const LOG_OUT_SUCCESS = "LOG_OUT_SUCCESS"; // 액션의 이름
 export const LOG_OUT_FAILURE = "LOG_OUT_FAILURE"; // 액션의 이름
 
-export const SIGN_UP_REQUEST = "SIGN_UP_REQUEST";
-export const SIGN_UP_SUCCESS = "SIGN_UP_SUCCESS";
-export const SIGN_UP_FAILURE = "SIGN_UP_FAILURE";
-
-export const LOG_IN_REQUEST = "LOG_IN_REQUEST"; // 액션의 이름
-export const LOG_IN_SUCCESS = "LOG_IN_SUCCESS"; // 액션의 이름
-export const LOG_IN_FAILURE = "LOG_IN_FAILURE"; // 액션의 이름
-
 export const LOAD_USER_REQUEST = "LOAD_USER_REQUEST";
 export const LOAD_USER_SUCCESS = "LOAD_USER_SUCCESS";
 export const LOAD_USER_FAILURE = "LOAD_USER_FAILURE";
-
-export const LOG_OUT_REQUEST = "LOG_OUT_REQUEST";
-export const LOG_OUT_SUCCESS = "LOG_OUT_SUCCESS";
-export const LOG_OUT_FAILURE = "LOG_OUT_FAILURE";
 
 export const LOAD_FOLLOW_REQUEST = "LOAD_FOLLOW_REQUEST";
 export const LOAD_FOLLOW_SUCCESS = "LOAD_FOLLOW_SUCCESS";

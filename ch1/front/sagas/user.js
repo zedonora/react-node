@@ -24,7 +24,7 @@ function* login() {
   try {
     yield call(loginAPI);
     yield put({
-      // put은 dispatch 동일
+      // put은 dispatch 동일2
       type: LOG_IN_SUCCESS,
     });
   } catch (e) {

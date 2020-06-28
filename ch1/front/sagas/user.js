@@ -28,7 +28,6 @@ function* login() {
       type: LOG_IN_SUCCESS,
     });
   } catch (e) {
-    // loginAPI 실패
     console.error(e);
     yield put({
       type: LOG_IN_FAILURE,

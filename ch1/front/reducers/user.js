@@ -35,7 +35,7 @@ export const LOG_IN_SUCCESS = "LOG_IN_SUCCESS"; // 액션의 이름
 export const LOG_IN_FAILURE = "LOG_IN_FAILURE"; // 액션의 이름
 export const LOG_OUT_REQUEST = "LOG_OUT_REQUEST"; // 액션의 이름
 export const LOG_OUT_SUCCESS = "LOG_OUT_SUCCESS"; // 액션의 이름
-export const LOG_OUT_FAILURE = "LOG_OUT_FAILURE"; // 액션의 이름
+export const LOG_OUT_FAILURE = "LOG_OUT_FAILURE"; // 액션의 이름2
 
 export const LOAD_USER_REQUEST = "LOAD_USER_REQUEST";
 export const LOAD_USER_SUCCESS = "LOAD_USER_SUCCESS";

@@ -28,7 +28,7 @@ function* login() {
       type: LOG_IN_SUCCESS,
     });
   } catch (e) {
-    // 에러 부분13
+    // 에러 부분14
     console.error(e);
     yield put({
       type: LOG_IN_FAILURE,

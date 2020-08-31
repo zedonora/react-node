@@ -12,7 +12,7 @@ const dummyUser = {
   },
 };
 
-// 초기값9
+// 초기값
 export const initialState = {
   isLoggedIn: false, // 로그인 여부
   isLoggingOut: false, // 로그아웃 시도중

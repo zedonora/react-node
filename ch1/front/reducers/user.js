@@ -10,8 +10,8 @@ const dummyUser = {
     nick: "",
     password: "",
   },
-};
-// 초기값14
+}
+// 초기값15
 export const initialState = {
   isLoggedIn: false, // 로그인 여부
   isLoggingOut: false, // 로그아웃 시도중

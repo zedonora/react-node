@@ -11,7 +11,7 @@ const dummyUser = {
             password: "",
         },
     }
-    // 초기값21
+    // 초기값22
 export const initialState = {
     isLoggedIn: false, // 로그인 여부
     isLoggingOut: false, // 로그아웃 시도중

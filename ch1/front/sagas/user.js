@@ -1,21 +1,21 @@
 import
-	{
-		all,
-		fork,
-		call,
-		put,
-		takeLatest,
-		take,
-		delay,
-		takeEvery,
-	} from "redux-saga/effects";
+{
+	all,
+	fork,
+	call,
+	put,
+	takeLatest,
+	take,
+	delay,
+	takeEvery,
+} from "redux-saga/effects";
 import
-	{
-		LOG_IN,
-		LOG_IN_SUCCESS,
-		LOG_IN_FAILURE,
-		SIGN_UP_REQUEST,
-	} from "../reducers/user";
+{
+	LOG_IN,
+	LOG_IN_SUCCESS,
+	LOG_IN_FAILURE,
+	SIGN_UP_REQUEST,
+} from "../reducers/user";
 
 const HELLO_SAGA = "HELLO SAGA";
 

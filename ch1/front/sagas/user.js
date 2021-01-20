@@ -34,7 +34,7 @@ function* login ()
 		});
 	} catch (e)
 	{
-		// 에러 부분5
+		// 에러 부분2
 
 		console.error(e);
 		yield put({

@@ -9,7 +9,7 @@ const Home = () => {
   const { mainPosts } = useSelector((state) => state.post);
   const dispatch = useDispatch();
 
-  //  
+  //   
   useEffect(() => {
     dispatch({
       type: "HELLO_SAGA",

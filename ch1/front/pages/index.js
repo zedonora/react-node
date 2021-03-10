@@ -4,13 +4,15 @@ import PostCard from "../components/PostCard";
 import { useSelector, useDispatch } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 
-const Home = () => {
+const Home = () =>
+{
   const { isLoggedIn } = useSelector((state) => state.user);
   const { mainPosts } = useSelector((state) => state.post);
   const dispatch = useDispatch();
 
-  //   
-  useEffect(() => {
+  //    
+  useEffect(() =>
+  {
     dispatch({
       type: "HELLO_SAGA",
     });
@@ -34,7 +36,8 @@ const Home = () => {
   return (
     <div>
       {isLoggedIn && <PostForm />}
-      {mainPosts.map((c) => {
+      {mainPosts.map((c) =>
+      {
         return <PostCard key={c} post={c} />;
       })}
     </div>

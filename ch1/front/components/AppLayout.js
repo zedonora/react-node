@@ -5,7 +5,7 @@ import LoginForm from "./LoginForm";
 import UserProfile from "./UserProfile";
 import Link from "next/link";
 import { useSelector } from "react-redux";
-      
+        
 const AppLayout = ({ children }) => {
   const { isLoggedIn } = useSelector((state) => state.user);
   return (
